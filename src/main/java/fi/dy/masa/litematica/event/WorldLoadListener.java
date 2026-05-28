@@ -2,6 +2,7 @@ package fi.dy.masa.litematica.event;
 
 import fi.dy.masa.litematica.data.DataManager;
 import fi.dy.masa.litematica.schematic.conversion.SchematicConversionMaps;
+import fi.dy.masa.litematica.util.NetworkServerStorageScope;
 import fi.dy.masa.litematica.world.SchematicWorldHandler;
 import fi.dy.masa.malilib.interfaces.IWorldLoadListener;
 import net.minecraft.client.MinecraftClient;
@@ -24,7 +25,8 @@ public class WorldLoadListener implements IWorldLoadListener
     @Override
     public void onWorldLoadPost(@Nullable ClientWorld worldBefore, @Nullable ClientWorld worldAfter, MinecraftClient mc)
     {
-        SchematicWorldHandler.recreateSchematicWorld(worldAfter == null);
+        SchematicWorldHandler.recreateSchematicWorld(worldAfter == null, worldAfter);
+        NetworkServerStorageScope.onWorldLoadPost(worldAfter);
 
         if (worldAfter != null)
         {

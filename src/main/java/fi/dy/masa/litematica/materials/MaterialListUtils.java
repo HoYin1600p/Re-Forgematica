@@ -14,6 +14,8 @@ import net.minecraft.item.BlockItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.collection.DefaultedList;
 import net.minecraft.util.math.Vec3i;
+import net.minecraftforge.items.CapabilityItemHandler;
+import net.minecraftforge.items.IItemHandler;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -21,6 +23,8 @@ import java.util.List;
 
 public class MaterialListUtils
 {
+    private static final int MAX_CONTAINER_COUNTING_DEPTH = 4;
+
     public static List<MaterialListEntry> createMaterialListFor(LitematicaSchematic schematic)
     {
         return createMaterialListFor(schematic, schematic.getAreas().keySet());
@@ -146,23 +150,51 @@ public class MaterialListUtils
 
             if (stack.isEmpty() == false)
             {
-                map.addTo(new ItemType(stack, true, false), stack.getCount());
-
-                if (stack.getItem() instanceof BlockItem &&
-                    ((BlockItem) stack.getItem()).getBlock() instanceof ShulkerBoxBlock &&
-                    InventoryUtils.shulkerBoxHasItems(stack))
-                {
-                    Object2IntOpenHashMap<ItemType> boxCounts = getStoredItemCounts(stack);
-
-                    for (ItemType type : boxCounts.keySet())
-                    {
-                        map.addTo(type, boxCounts.getInt(type));
-                    }
-                }
+                addStackAndContainerContentsToCounts(stack, map, 0);
             }
         }
 
         return map;
+    }
+
+    private static void addStackAndContainerContentsToCounts(ItemStack stack, Object2IntOpenHashMap<ItemType> map, int depth)
+    {
+        map.addTo(new ItemType(stack, true, false), stack.getCount());
+
+        if (depth >= MAX_CONTAINER_COUNTING_DEPTH)
+        {
+            return;
+        }
+
+        if (stack.getItem() instanceof BlockItem &&
+            ((BlockItem) stack.getItem()).getBlock() instanceof ShulkerBoxBlock &&
+            InventoryUtils.shulkerBoxHasItems(stack))
+        {
+            Object2IntOpenHashMap<ItemType> boxCounts = getStoredItemCounts(stack);
+
+            for (ItemType type : boxCounts.keySet())
+            {
+                map.addTo(type, boxCounts.getInt(type));
+            }
+        }
+
+        fi.dy.masa.litematica.util.SophisticatedBackpacksCompat.requestContentsIfNeeded(stack);
+        stack.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY).ifPresent(itemHandler -> addItemHandlerContentsToCounts(itemHandler, map, depth + 1));
+    }
+
+    private static void addItemHandlerContentsToCounts(IItemHandler itemHandler, Object2IntOpenHashMap<ItemType> map, int depth)
+    {
+        final int slots = itemHandler.getSlots();
+
+        for (int slot = 0; slot < slots; ++slot)
+        {
+            ItemStack stack = itemHandler.getStackInSlot(slot);
+
+            if (stack.isEmpty() == false)
+            {
+                addStackAndContainerContentsToCounts(stack, map, depth);
+            }
+        }
     }
 
     public static Object2IntOpenHashMap<ItemType> getStoredItemCounts(ItemStack stackShulkerBox)

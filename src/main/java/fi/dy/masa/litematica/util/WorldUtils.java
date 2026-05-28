@@ -311,7 +311,12 @@ public class WorldUtils
 
                 if (wrapper.getHitType() == HitType.SCHEMATIC_BLOCK)
                 {
-                    state = SchematicWorldHandler.getSchematicWorld().getBlockState(pos);
+                    World world = SchematicWorldHandler.getSchematicWorld();
+
+                    if (world != null)
+                    {
+                        state = world.getBlockState(pos);
+                    }
                 }
                 else if (wrapper.getHitType() == HitType.VANILLA_BLOCK)
                 {
@@ -352,6 +357,12 @@ public class WorldUtils
         if (pos != null)
         {
             World world = SchematicWorldHandler.getSchematicWorld();
+
+            if (world == null)
+            {
+                return false;
+            }
+
             BlockState state = world.getBlockState(pos);
             ItemStack stack = MaterialCache.getInstance().getRequiredBuildItemForState(state, world, pos);
 
@@ -383,6 +394,11 @@ public class WorldUtils
 
             if (result == ActionResult.FAIL)
             {
+                if (SophisticatedBackpacksCompat.hasPendingTransfer())
+                {
+                    return true;
+                }
+
                 MessageOutputType type = (MessageOutputType) Configs.Generic.PLACEMENT_RESTRICTION_WARN.getOptionListValue();
 
                 if (type == MessageOutputType.MESSAGE)
@@ -520,7 +536,7 @@ public class WorldUtils
 
                 //System.out.printf("pos: %s side: %s, hit: %s\n", pos, side, hitPos);
                 // pos, side, hitPos
-                mc.interactionManager.interactBlock(mc.player, mc.world, hand, hitResult);
+                interactBlockWithOptionalQuarkRotationLock(mc, hand, hitResult, stateSchematic, protocol);
 
                 if (stateSchematic.getBlock() instanceof SlabBlock && stateSchematic.get(SlabBlock.TYPE) == SlabType.DOUBLE)
                 {
@@ -530,7 +546,7 @@ public class WorldUtils
                     {
                         side = applyPlacementFacing(stateSchematic, sideOrig, stateClient);
                         hitResult = new BlockHitResult(hitPos, side, pos, false);
-                        mc.interactionManager.interactBlock(mc.player, mc.world, hand, hitResult);
+                        interactBlockWithOptionalQuarkRotationLock(mc, hand, hitResult, stateSchematic, protocol);
                     }
                 }
             }
@@ -543,6 +559,20 @@ public class WorldUtils
         }
 
         return ActionResult.PASS;
+    }
+
+    private static void interactBlockWithOptionalQuarkRotationLock(MinecraftClient mc, Hand hand, BlockHitResult hitResult,
+                                                                   BlockState stateSchematic, EasyPlaceProtocol protocol)
+    {
+        boolean quarkLockApplied = (protocol == EasyPlaceProtocol.SLAB_ONLY || protocol == EasyPlaceProtocol.NONE) &&
+                                   QuarkRotationCompat.applyLockForState(stateSchematic, mc);
+
+        mc.interactionManager.interactBlock(mc.player, mc.world, hand, hitResult);
+
+        if (quarkLockApplied)
+        {
+            QuarkRotationCompat.clearLockWithRetry();
+        }
     }
 
     private static boolean easyPlaceBlockChecksCancel(BlockState stateSchematic, BlockState stateClient,
@@ -827,6 +857,12 @@ public class WorldUtils
             BlockState stateClient = mc.world.getBlockState(pos);
 
             World worldSchematic = SchematicWorldHandler.getSchematicWorld();
+
+            if (worldSchematic == null)
+            {
+                return false;
+            }
+
             LayerRange range = DataManager.getRenderLayerRange();
             boolean schematicHasAir = worldSchematic.isAir(pos);
 

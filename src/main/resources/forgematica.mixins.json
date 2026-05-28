@@ -15,6 +15,7 @@
     "MixinBlockItem",
     "MixinBlockStateFlattening",
     "MixinChestBlock",
+    "MixinClientPlayerEntity",
     "MixinClientPlayNetworkHandler",
     "MixinClientWorld",
     "MixinDebugHud",

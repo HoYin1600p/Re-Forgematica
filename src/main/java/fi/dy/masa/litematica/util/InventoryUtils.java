@@ -47,6 +47,11 @@ public class InventoryUtils
         }
     }
 
+    public static List<Integer> getPickBlockableHotbarSlots()
+    {
+        return new ArrayList<>(PICK_BLOCKABLE_SLOTS);
+    }
+
     public static void setPickedItemToHand(ItemStack stack, MinecraftClient mc)
     {
         int slotNum = mc.player.getInventory().getSlotWithStack(stack);
@@ -149,6 +154,14 @@ public class InventoryUtils
                     }
                 }
 
+                if (slot == -1)
+                {
+                    if (SophisticatedBackpacksCompat.requestItemPull(stack, mc) == false)
+                    {
+                        SophisticatedBackpacksCompat.tryRequestBlockPick(stack);
+                    }
+                }
+
                 //return shouldPick == false || canPick;
             }
         }
@@ -229,6 +242,11 @@ public class InventoryUtils
         }
 
         return -1;
+    }
+
+    public static boolean isToolOrDamageable(ItemStack stack)
+    {
+        return stack.isEmpty() == false && (stack.getItem() instanceof ToolItem || stack.getItem().isDamageable());
     }
 
     public static boolean doesShulkerBoxContainItem(ItemStack stack, ItemStack referenceItem)

@@ -19,6 +19,7 @@ import fi.dy.masa.litematica.selection.AreaSelectionSimple;
 import fi.dy.masa.litematica.selection.SelectionManager;
 import fi.dy.masa.litematica.tool.ToolMode;
 import fi.dy.masa.litematica.tool.ToolModeData;
+import fi.dy.masa.litematica.util.NetworkServerStorageScope;
 import fi.dy.masa.litematica.util.SchematicWorldRefresher;
 import fi.dy.masa.litematica.util.ToBooleanFunction;
 import fi.dy.masa.malilib.gui.interfaces.IDirectoryCache;
@@ -26,6 +27,7 @@ import fi.dy.masa.malilib.util.FileUtils;
 import fi.dy.masa.malilib.util.JsonUtils;
 import fi.dy.masa.malilib.util.LayerRange;
 import fi.dy.masa.malilib.util.StringUtils;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
@@ -34,6 +36,7 @@ import net.minecraft.nbt.StringNbtReader;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
+import net.minecraft.world.World;
 
 import javax.annotation.Nullable;
 import java.io.File;
@@ -325,6 +328,14 @@ public class DataManager implements IDirectoryCache
         canSave = false;
     }
 
+    public static void saveForServerTransfer()
+    {
+        if (MinecraftClient.getInstance().world != null)
+        {
+            getInstance().savePerDimensionData();
+        }
+    }
+
     public static void clear()
     {
         TaskScheduler.getInstanceClient().clearTasks();
@@ -501,10 +512,33 @@ public class DataManager implements IDirectoryCache
     private static File getCurrentStorageFile(boolean globalData)
     {
         File dir = getCurrentConfigDirectory();
+        String serverScope = NetworkServerStorageScope.getActiveStorageScope();
 
         if (dir.exists() == false && dir.mkdirs() == false)
         {
             Litematica.logger.warn("Failed to create the config directory '{}'", dir.getAbsolutePath());
+        }
+
+        if (serverScope != null)
+        {
+            String name = StringUtils.getWorldOrServerName();
+
+            if (name != null)
+            {
+                name = name + "_server_" + serverScope;
+
+                if (globalData)
+                {
+                    return new File(dir, Reference.MOD_ID + "_" + name + ".json");
+                }
+
+                World world = MinecraftClient.getInstance().world;
+
+                if (world != null)
+                {
+                    return new File(dir, Reference.MOD_ID + "_" + name + "_dim_" + fi.dy.masa.malilib.util.WorldUtils.getDimensionId(world) + ".json");
+                }
+            }
         }
 
         return new File(dir, StringUtils.getStorageFileName(globalData, Reference.MOD_ID + "_", ".json", "default"));

@@ -110,6 +110,12 @@ public class SchematicPlacementManager
             }
 
             WorldSchematic worldSchematic = SchematicWorldHandler.getSchematicWorld();
+
+            if (worldSchematic == null)
+            {
+                return;
+            }
+
             Iterator<ChunkPos> queueIterator = this.chunkRebuildQueue.iterator();
 
             while (queueIterator.hasNext())

@@ -507,5 +507,8 @@
     "litematica.tool_mode.name.paste_schematic": "Paste Schematic in world",
     "litematica.tool_mode.name.rebuild": "Edit Schematic",
     "litematica.tool_mode.name.replace_block": "Replace block",
-    "litematica.tool_mode.name.schematic_placement": "Schematic Placement"
+    "litematica.tool_mode.name.schematic_placement": "Schematic Placement",
+
+    "key.categories.forgematica": "Forgematica",
+    "key.forgematica.open_menu": "Open Menu"
 }

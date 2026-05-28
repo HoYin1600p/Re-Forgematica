@@ -17,6 +17,7 @@ public class Forgematica {
             ModContainer modContainer = ModLoadingContext.get().getActiveContainer();
 
             ForgeUtils.getInstance().getClientModIgnoredServerOnly(modContainer);
+            ForgeKeybindings.init();
             InitializationHandler.getInstance().registerInitializationHandler(new InitHandler());
 
             ForgeUtils.getInstance().registerModConfigScreen(modContainer, (screen) -> {

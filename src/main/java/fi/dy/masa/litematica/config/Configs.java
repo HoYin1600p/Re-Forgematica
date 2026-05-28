@@ -75,6 +75,10 @@ public class Configs implements IConfigHandler
         public static final ConfigOptionList    PLACEMENT_RESTRICTION_WARN = new ConfigOptionList  ("placementRestrictionWarn", MessageOutputType.ACTIONBAR, "Selects which type of warning message to show (if any)\nwhen either the Easy Place mode or Placement Restriction prevent placing a block");
         public static final ConfigBoolean       RENDER_MATERIALS_IN_GUI = new ConfigBoolean(    "renderMaterialListInGuis", true, "Whether or not the material list should\nbe rendered inside GUIs");
         public static final ConfigBoolean       RENDER_THREAD_NO_TIMEOUT = new ConfigBoolean(   "renderThreadNoTimeout", true, "Removes the timeout from the rendering worker threads.\nIf you get very stuttery rendering when moving around\nor dealing with large schematics, try disabling this. It will however make\nthe schematic rendering a lot slower in some cases.");
+        public static final ConfigBoolean       SERVER_STORAGE_SCOPE_FROM_COMMANDS = new ConfigBoolean("serverStorageScopeFromCommands", true, "When connected through a proxy/network, separate placement data\nby the target server name captured from configured transfer commands.\nThis keeps schematics loaded on one backend server from rendering\nat the same coordinates after transferring to another backend.\nNormal singleplayer and direct multiplayer clients are unaffected\nunless one of the configured commands is sent.");
+        public static final ConfigString        SERVER_STORAGE_SCOPE_COMMANDS = new ConfigString("serverStorageScopeCommands", "millennium, vaulthalla, eon, century, asgard, pog, lobby, omega, echo, vault", "Comma-separated server transfer command names used for backend server storage scoping.\nFor example, adding millennium means /millennium will switch the placement storage scope to millennium.\nAdd each backend server alias command here to keep all server placements separate.");
+        public static final ConfigString        SERVER_STORAGE_SCOPE_INITIAL = new ConfigString("serverStorageScopeInitial", "", "Optional backend server storage scope to use on first login,\nbefore any configured transfer command has been captured.\nLeave empty for normal singleplayer and direct multiplayer compatibility.\nIf your network always logs players into lobby first, set this to lobby.");
+        public static final ConfigBoolean       SOPHISTICATED_BACKPACKS_AVOID_SWAPPING_TOOLS = new ConfigBoolean("sophisticatedBackpacksAvoidSwappingTools", true, "When pulling Easy Place blocks from Sophisticated Backpacks,\navoid swapping tools or damageable items from the selected hotbar slot\nback into the backpack. If possible, another pick-blockable hotbar slot\nwith an empty slot or non-tool item is selected instead.");
         public static final ConfigOptionList    SELECTION_CORNERS_MODE  = new ConfigOptionList( "selectionCornersMode", CornerSelectionMode.CORNERS, "The Area Selection corners mode to use (Corners, or Expand)");
         public static final ConfigString        TOOL_ITEM               = new ConfigString(     "toolItem", "minecraft:stick", "The item to use as the \"tool\" for selections etc.");
         public static final ConfigBoolean       TOOL_ITEM_ENABLED       = new ConfigBoolean(    "toolItemEnabled", true, "If true, then the \"tool\" item can be used to control selections etc.", "Tool Item Enabled");
@@ -121,6 +125,10 @@ public class Configs implements IConfigHandler
                 PLACEMENT_RESTRICTION_WARN,
                 RENDER_MATERIALS_IN_GUI,
                 RENDER_THREAD_NO_TIMEOUT,
+                SERVER_STORAGE_SCOPE_FROM_COMMANDS,
+                SERVER_STORAGE_SCOPE_COMMANDS,
+                SERVER_STORAGE_SCOPE_INITIAL,
+                SOPHISTICATED_BACKPACKS_AVOID_SWAPPING_TOOLS,
                 TOOL_ITEM_ENABLED,
                 UNHIDE_SCHEMATIC_PROJECTS,
 

@@ -29,7 +29,13 @@ public class SchematicWorldHandler
     @Nullable
     public static WorldSchematic createSchematicWorld()
     {
-        if (MinecraftClient.getInstance().world == null)
+        return createSchematicWorld(MinecraftClient.getInstance().world);
+    }
+
+    @Nullable
+    public static WorldSchematic createSchematicWorld(@Nullable ClientWorld clientWorld)
+    {
+        if (clientWorld == null)
         {
             return null;
         }
@@ -39,6 +45,11 @@ public class SchematicWorldHandler
     }
 
     public static void recreateSchematicWorld(boolean remove)
+    {
+        recreateSchematicWorld(remove, MinecraftClient.getInstance().world);
+    }
+
+    public static void recreateSchematicWorld(boolean remove, @Nullable ClientWorld clientWorld)
     {
         if (remove)
         {
@@ -57,7 +68,7 @@ public class SchematicWorldHandler
             }
 
             // Note: The dimension used here must have no skylight, because the custom Chunks don't have those arrays
-            world = createSchematicWorld();
+            world = createSchematicWorld(clientWorld);
 
             if (Configs.Generic.DEBUG_LOGGING.getBooleanValue())
             {

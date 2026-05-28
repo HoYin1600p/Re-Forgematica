@@ -226,7 +226,14 @@ public class SchematicUtils
         {
             BlockHitResult trace = wrapper.getBlockHitResult();
             BlockPos pos = trace.getBlockPos();
-            BlockState stateOriginal = SchematicWorldHandler.getSchematicWorld().getBlockState(pos);
+            WorldSchematic worldSchematic = SchematicWorldHandler.getSchematicWorld();
+
+            if (worldSchematic == null)
+            {
+                return false;
+            }
+
+            BlockState stateOriginal = worldSchematic.getBlockState(pos);
 
             return setAllIdenticalSchematicBlockStates(pos, stateOriginal, Blocks.AIR.getDefaultState(), mc.world);
         }
@@ -244,8 +251,9 @@ public class SchematicUtils
             Direction playerFacingH = mc.player.getHorizontalFacing();
             Direction direction = fi.dy.masa.malilib.util.PositionUtils.getTargetedDirection(info.side, playerFacingH, info.pos, info.hitVec);
             BlockPos posStart = info.pos.offset(info.side); // offset to the adjacent air block
+            WorldSchematic worldSchematic = SchematicWorldHandler.getSchematicWorld();
 
-            if (SchematicWorldHandler.getSchematicWorld().getBlockState(posStart).isAir())
+            if (worldSchematic != null && worldSchematic.getBlockState(posStart).isAir())
             {
                 BlockPos posEnd = getReplacementBoxEndPos(posStart, direction);
                 return setSchematicBlockStates(posStart, posEnd, info.stateNew);
@@ -264,7 +272,14 @@ public class SchematicUtils
         {
             BlockHitResult trace = wrapper.getBlockHitResult();
             BlockPos pos = trace.getBlockPos();
-            BlockState stateOriginal = SchematicWorldHandler.getSchematicWorld().getBlockState(pos);
+            WorldSchematic worldSchematic = SchematicWorldHandler.getSchematicWorld();
+
+            if (worldSchematic == null)
+            {
+                return false;
+            }
+
+            BlockState stateOriginal = worldSchematic.getBlockState(pos);
 
             return setAllStatesToAirExcept(pos, stateOriginal, mc.world);
         }
@@ -280,8 +295,9 @@ public class SchematicUtils
         if (info != null && info.stateNew != null)
         {
             BlockPos posStart = info.pos.offset(info.side); // offset to the adjacent air block
+            WorldSchematic worldSchematic = SchematicWorldHandler.getSchematicWorld();
 
-            if (SchematicWorldHandler.getSchematicWorld().getBlockState(posStart).isAir())
+            if (worldSchematic != null && worldSchematic.getBlockState(posStart).isAir())
             {
                 return setAllIdenticalSchematicBlockStates(posStart, Blocks.AIR.getDefaultState(), info.stateNew, mc.world);
             }

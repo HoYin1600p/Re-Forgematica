@@ -271,7 +271,14 @@ public class MaterialListHudRenderer implements IInfoHudRenderer
             if (traceWrapper != null && traceWrapper.getHitType() == RayTraceUtils.RayTraceWrapper.HitType.SCHEMATIC_BLOCK)
             {
                 BlockPos pos = traceWrapper.getBlockHitResult().getBlockPos();
-                BlockState state = SchematicWorldHandler.getSchematicWorld().getBlockState(pos);
+                net.minecraft.world.World worldSchematic = SchematicWorldHandler.getSchematicWorld();
+
+                if (worldSchematic == null)
+                {
+                    return;
+                }
+
+                BlockState state = worldSchematic.getBlockState(pos);
 
                 if (state != lastLookedAtBlock)
                 {

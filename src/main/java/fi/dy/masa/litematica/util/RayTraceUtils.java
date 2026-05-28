@@ -466,6 +466,12 @@ public class RayTraceUtils
         }
 
         World worldSchematic = SchematicWorldHandler.getSchematicWorld();
+
+        if (worldSchematic == null)
+        {
+            return null;
+        }
+
         List<BlockHitResult> list = rayTraceBlocksToList(worldSchematic, eyesPos, lookEndPos, RaycastContext.FluidHandling.NONE, false, false, true, 200);
         BlockHitResult furthestTrace = null;
         double furthestDist = -1.0;
@@ -536,6 +542,12 @@ public class RayTraceUtils
         }
 
         World worldSchematic = SchematicWorldHandler.getSchematicWorld();
+
+        if (worldSchematic == null)
+        {
+            return null;
+        }
+
         List<BlockHitResult> list = rayTraceBlocksToList(worldSchematic, eyesPos, lookEndPos, RaycastContext.FluidHandling.NONE, false, false, true, 200);
         BlockHitResult furthestTrace = null;
         double furthestDist = -1.0;
