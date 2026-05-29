@@ -4,6 +4,18 @@ Re-Forgematica is a fork of [Forgematica / Litematica-Forge](https://github.com/
 
 This fork focuses on survival building workflows on Forge servers, especially Easy Place behavior with backpack storage, orientation helpers, and proxy-style server networks.
 
+## Latest Patch
+
+### 1.0.1
+
+- Added native schematic printer mode with configurable placement interval and range.
+- Added printer hold and toggle hotkeys.
+- Added printer support for current rendered layer range, creative pick-block placement, survival inventory selection, and Sophisticated Backpacks item pulls.
+- Improved printer placement for slabs, stairs, rods, ladders, wall-attached blocks, banners, doors, heads/skulls, and directional redstone-style blocks.
+- Added stricter support-face handling so face-attached blocks wait for the intended support block and attach to the schematic face.
+- Added placement protocol decoding for wall/standing block items so skull/head rotation can be forced outside Easy Place mode.
+- Updated the packaged mod icon for the `1.0.1` release.
+
 ## Changes In This Fork
 
 ### Forge Controls Keybind

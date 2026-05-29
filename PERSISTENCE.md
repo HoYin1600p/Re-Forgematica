@@ -17,6 +17,8 @@ The combined fork remains LGPLv3 because it modifies and extends Litematica/Forg
 Files added for publishing:
 
 - `README.md`: public project overview and feature summary.
+- `CURSEFORGE_RELEASES.md`: paste-ready CurseForge project description, short summary, and version release copy.
+- `CHANGELOG.md`: short publisher changelog for the current release.
 - `LICENSE_RE-FORGEMATICA.md`: MIT-style grant for new Re-Forgematica additions to the maximum extent separable from upstream LGPL code.
 - `LICENSE`: left as the upstream LGPLv3 license text.
 
@@ -266,6 +268,23 @@ Current limitations / next likely work:
 - It does normal block placement and orientation assistance.
 - It does not yet implement post-placement interaction guides such as stripping logs, lighting candles, filling flower pots, editing signs, tilling dirt, or cycling block states.
 - More block-family-specific guide logic can be added after in-game testing identifies gaps.
+
+1.0.1 release handoff, 2026-05-29:
+
+- Version bumped from `1.0.0` to `1.0.1` in `gradle.properties`.
+- README now has a `Latest Patch` section for `1.0.1` near the top, plus the native printer feature section and printer attribution in Credits.
+- `CURSEFORGE_RELEASES.md` added in the same style as ArcaneBeam's release-copy file. It includes:
+  - Short CurseForge summary under 256 characters.
+  - Full project description copy.
+  - `1.0.1` release copy.
+- `CHANGELOG.md` now contains the `1.0.1` publisher changelog.
+- Mod icon was replaced in both required locations:
+  - `src/main/resources/icon.png`
+  - `src/main/resources/assets/forgematica/icon.png`
+- Both icon files were verified by SHA-256 against user-provided source `E:\server\Re-Forgematica\mod-icon.png`.
+- Final build after icon correction passed with `.\gradlew.bat build`.
+- Final jar for release testing/publishing: `build/libs/re-forgematica-1.0.1-1.18.2.jar`.
+- Final sources jar: `build/libs/re-forgematica-1.0.1-1.18.2-sources.jar`.
 
 End-of-night printer handoff, 2026-05-28:
 
