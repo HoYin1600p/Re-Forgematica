@@ -19,7 +19,7 @@ public class ForgeKeybindings
             "key.forgematica.open_menu",
             KeyConflictContext.IN_GAME,
             InputUtil.Type.KEYSYM,
-            InputUtil.GLFW_KEY_L,
+            InputUtil.UNKNOWN_KEY.getCode(),
             CATEGORY);
 
     private static boolean initialized;

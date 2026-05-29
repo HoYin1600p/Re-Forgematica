@@ -73,6 +73,9 @@ public class Configs implements IConfigHandler
         public static final ConfigString        PICK_BLOCKABLE_SLOTS    = new ConfigString(     "pickBlockableSlots", "1,2,3,4,5", "The hotbar slots that are allowed to be\nused for the schematic pick block");
         public static final ConfigBoolean       PLACEMENT_RESTRICTION   = new ConfigBoolean(    "placementRestriction", false, "When enabled, the use key can only be used\nwhen holding the correct item for the targeted position,\nand the targeted position must have a missing block in the schematic", "Placement Restriction");
         public static final ConfigOptionList    PLACEMENT_RESTRICTION_WARN = new ConfigOptionList  ("placementRestrictionWarn", MessageOutputType.ACTIONBAR, "Selects which type of warning message to show (if any)\nwhen either the Easy Place mode or Placement Restriction prevent placing a block");
+        public static final ConfigBoolean       PRINTER_MODE            = new ConfigBoolean(    "printerMode", false, "When enabled, automatically places nearby missing schematic blocks\ninside the current render layer range using normal player placement packets.");
+        public static final ConfigInteger       PRINTER_INTERVAL        = new ConfigInteger(    "printerInterval", 6, 1, 100, "The number of client ticks to wait between automatic printer block placement attempts.");
+        public static final ConfigDouble        PRINTER_RANGE           = new ConfigDouble(     "printerRange", 4.5, 1.0, 16.0, "Maximum printer placement range in blocks.\nThe default matches vanilla survival reach; raise this only on servers with increased reach.");
         public static final ConfigBoolean       RENDER_MATERIALS_IN_GUI = new ConfigBoolean(    "renderMaterialListInGuis", true, "Whether or not the material list should\nbe rendered inside GUIs");
         public static final ConfigBoolean       RENDER_THREAD_NO_TIMEOUT = new ConfigBoolean(   "renderThreadNoTimeout", true, "Removes the timeout from the rendering worker threads.\nIf you get very stuttery rendering when moving around\nor dealing with large schematics, try disabling this. It will however make\nthe schematic rendering a lot slower in some cases.");
         public static final ConfigBoolean       SERVER_STORAGE_SCOPE_FROM_COMMANDS = new ConfigBoolean("serverStorageScopeFromCommands", true, "When connected through a proxy/network, separate placement data\nby the target server name captured from configured transfer commands.\nThis keeps schematics loaded on one backend server from rendering\nat the same coordinates after transferring to another backend.\nNormal singleplayer and direct multiplayer clients are unaffected\nunless one of the configured commands is sent.");
@@ -123,6 +126,9 @@ public class Configs implements IConfigHandler
                 PICK_BLOCK_SHULKERS,
                 PLACEMENT_RESTRICTION,
                 PLACEMENT_RESTRICTION_WARN,
+                PRINTER_MODE,
+                PRINTER_INTERVAL,
+                PRINTER_RANGE,
                 RENDER_MATERIALS_IN_GUI,
                 RENDER_THREAD_NO_TIMEOUT,
                 SERVER_STORAGE_SCOPE_FROM_COMMANDS,

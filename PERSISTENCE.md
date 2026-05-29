@@ -162,7 +162,7 @@ Behavior added:
 
 - Adds normal Minecraft/Forge Controls category: `Forgematica`
 - Adds keybind: `Open Menu`
-- Default key: `L`
+- Default key: unbound (`InputUtil.UNKNOWN_KEY`)
 - Opens the existing Litematica/Forgematica main menu.
 
 Internal hotkey change:
@@ -171,12 +171,125 @@ Internal hotkey change:
 - Reason: the Forge Controls keybind is now the default user-facing way to open the menu.
 - Other internal MaLiLib/Forgematica hotkeys remain configurable inside the mod.
 
+## Native Schematic Printer
+
+Primary file:
+
+- `src/main/java/fi/dy/masa/litematica/util/SchematicPrinter.java`
+
+Related files:
+
+- `src/main/java/fi/dy/masa/litematica/scheduler/ClientTickHandler.java`
+- `src/main/java/fi/dy/masa/litematica/config/Configs.java`
+- `src/main/java/fi/dy/masa/litematica/config/Hotkeys.java`
+- `src/main/java/fi/dy/masa/litematica/event/KeyCallbacks.java`
+- `src/main/java/fi/dy/masa/litematica/util/WorldUtils.java`
+- `src/main/java/fi/dy/masa/litematica/util/InventoryUtils.java`
+- `src/main/java/fi/dy/masa/litematica/util/SophisticatedBackpacksCompat.java`
+- `src/main/java/fi/dy/masa/litematica/util/QuarkRotationCompat.java`
+
+Behavior added:
+
+- Adds a native Re-Forgematica printer, intentionally implemented without copying NeoForgematicaPrinter source because NeoForgematicaPrinter is AGPLv3.
+- Runs from the normal client tick handler.
+- Places at most one nearby missing schematic block per configured interval.
+- Only considers positions inside the current render layer range, so single-layer rendering limits printer placement to that layer.
+- Scans around the player within the configured printer range and sorts candidates nearest-first.
+- Uses normal player placement packets rather than commands.
+- Uses `MaterialCache` to resolve the required placement item.
+- Uses existing `InventoryUtils.schematicWorldPickBlock` behavior for survival and creative mode.
+- In creative mode, the existing creative pick-block path can synthesize the required item into the hotbar before placement.
+- In survival, existing inventory pick-block behavior is used, including Sophisticated Backpacks item pulls.
+- If Sophisticated Backpacks starts a pending transfer, the printer pauses placement until the transfer finishes.
+- Keeps Quark rotation lock support in the placement path via `WorldUtils.interactBlockWithOptionalQuarkRotationLock`.
+
+Printer configs added in Generic:
+
+- `printerMode`
+  - Default: `false`
+  - Purpose: toggle automatic schematic printing on/off.
+- `printerInterval`
+  - Default: `6`
+  - Range: `1` to `100`
+  - Purpose: number of client ticks to wait between printer placement attempts.
+- `printerRange`
+  - Default: `4.5`
+  - Range: `1.0` to `16.0`
+  - Purpose: max placement range in blocks; default matches vanilla survival reach, with room for servers that increase reach.
+
+Printer hotkeys added:
+
+- `printerActivation`
+  - Default: `V`
+  - Behavior: hold to print even if `printerMode` is off.
+  - Uses `KeybindSettings.PRESS_ALLOWEXTRA_EMPTY` so it can function while other keys/buttons are pressed.
+- `printerToggle`
+  - Default: `CAPS_LOCK`
+  - Behavior: toggles `printerMode`.
+  - Uses `KeybindSettings.PRESS_ALLOWEXTRA_EMPTY`.
+
+Native printer rotation support:
+
+- Before sending the placement interaction, the printer simulates candidate player rotations against Minecraft's own `BlockItem#getPlacementState(...)`.
+- Candidate rotations cover the four horizontal directions plus straight up/down.
+- The best matching simulated rotation is sent with `PlayerMoveC2SPacket.LookAndOnGround`.
+- Matching currently scores common orientation/state properties such as `FACING`, `HORIZONTAL_FACING`, `AXIS`, `BLOCK_HALF`, `SLAB_TYPE`, `ROTATION`, `WALL_MOUNT_LOCATION`, `DOOR_HINGE`, `CHEST_TYPE`, and `STAIR_SHAPE`.
+- If simulation cannot find a useful rotation, the printer falls back to a property-based look-direction heuristic.
+- Existing Easy Place placement protocol hit-vector support is still applied for v3, Carpet v2, and slab-only behavior.
+- Existing Quark rotation lock is still applied afterward when its protocol scope allows it.
+
+Current limitations / next likely work:
+
+- This is the first testable implementation.
+- It does normal block placement and orientation assistance.
+- It does not yet implement post-placement interaction guides such as stripping logs, lighting candles, filling flower pots, editing signs, tilling dirt, or cycling block states.
+- More block-family-specific guide logic can be added after in-game testing identifies gaps.
+
+## GitHub Issue Template
+
+Added:
+
+- `.github/ISSUE_TEMPLATE/bug_report.yml`
+
+Purpose:
+
+- Provides a default bug report form for crashes, Easy Place, Sophisticated Backpacks, Quark rotation, server transfers, rendering, keybinds, material list issues, and other mod behavior.
+- Asks for Re-Forgematica version, Forge version, MaFgLib version, optional mods, reproduction steps, server/proxy context, logs, and screenshots.
+
+## Build / Artifact Naming
+
+Files changed:
+
+- `build.gradle`
+- `gradle.properties`
+
+Current artifact naming:
+
+- `archives_base_name=re-forgematica`
+- `mod_version=1.0.0`
+- `version = "${project.mod_version}-${project.minecraft_version}"`
+
+Current built jar:
+
+```text
+build/libs/re-forgematica-1.0.0-1.18.2.jar
+```
+
+Current sources jar:
+
+```text
+build/libs/re-forgematica-1.0.0-1.18.2-sources.jar
+```
+
 ## Important Implementation Constraints
 
 - Optional integrations must remain optional. Do not add hard dependencies on Quark or Sophisticated Backpacks unless the mod metadata and distribution model are intentionally changed.
 - Runtime reflection failures should disable only that compatibility layer, not the whole mod.
 - Avoid server-specific APIs for backend scoping. The current implementation is client-only and command-alias based.
 - Do not remove the delayed second Quark lock-clear unless another fallback is added.
+- Do not copy NeoForgematicaPrinter source directly unless the licensing plan is intentionally changed; it is AGPLv3.
+- Keep printer behavior throttled by `printerInterval`; do not make it place entire schematics instantly.
+- Keep printer placement limited by `DataManager.getRenderLayerRange()` so rendered layers control what gets placed.
 - Do not replace the LGPLv3 root license with MIT.
 
 ## Build Verification
@@ -193,10 +306,10 @@ Result:
 BUILD SUCCESSFUL
 ```
 
-Built jar path from the previous build:
+Built jar path from the latest build:
 
 ```text
-build/libs/Forgematica-0.1.11-mc1.18.2.jar
+build/libs/re-forgematica-1.0.0-1.18.2.jar
 ```
 
 ## Published Git State

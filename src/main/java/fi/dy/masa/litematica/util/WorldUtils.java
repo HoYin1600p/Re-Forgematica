@@ -561,7 +561,7 @@ public class WorldUtils
         return ActionResult.PASS;
     }
 
-    private static void interactBlockWithOptionalQuarkRotationLock(MinecraftClient mc, Hand hand, BlockHitResult hitResult,
+    public static void interactBlockWithOptionalQuarkRotationLock(MinecraftClient mc, Hand hand, BlockHitResult hitResult,
                                                                    BlockState stateSchematic, EasyPlaceProtocol protocol)
     {
         boolean quarkLockApplied = (protocol == EasyPlaceProtocol.SLAB_ONLY || protocol == EasyPlaceProtocol.NONE) &&
@@ -575,7 +575,7 @@ public class WorldUtils
         }
     }
 
-    private static boolean easyPlaceBlockChecksCancel(BlockState stateSchematic, BlockState stateClient,
+    public static boolean easyPlaceBlockChecksCancel(BlockState stateSchematic, BlockState stateClient,
             PlayerEntity player, HitResult trace, ItemStack stack)
     {
         Block blockSchematic = stateSchematic.getBlock();
@@ -685,7 +685,7 @@ public class WorldUtils
         return y;
     }
 
-    private static Vec3d applyBlockSlabProtocol(BlockPos pos, BlockState state, Vec3d hitVecIn)
+    public static Vec3d applyBlockSlabProtocol(BlockPos pos, BlockState state, Vec3d hitVecIn)
     {
         double newY = applySlabOrStairHitVecY(hitVecIn.y, pos, state);
         return newY != hitVecIn.y ? new Vec3d(hitVecIn.x, newY, hitVecIn.z) : hitVecIn;
@@ -759,7 +759,7 @@ public class WorldUtils
         return hitVecIn;
     }
 
-    private static Direction applyPlacementFacing(BlockState stateSchematic, Direction side, BlockState stateClient)
+    public static Direction applyPlacementFacing(BlockState stateSchematic, Direction side, BlockState stateClient)
     {
         Block blockSchematic = stateSchematic.getBlock();
         Block blockClient = stateClient.getBlock();

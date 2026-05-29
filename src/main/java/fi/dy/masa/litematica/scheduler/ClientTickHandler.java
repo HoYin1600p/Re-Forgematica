@@ -5,6 +5,7 @@ import fi.dy.masa.litematica.data.DataManager;
 import fi.dy.masa.litematica.schematic.conversion.SchematicConversionMaps;
 import fi.dy.masa.litematica.selection.SelectionManager;
 import fi.dy.masa.litematica.util.QuarkRotationCompat;
+import fi.dy.masa.litematica.util.SchematicPrinter;
 import fi.dy.masa.litematica.util.SophisticatedBackpacksCompat;
 import fi.dy.masa.litematica.util.WorldUtils;
 import fi.dy.masa.litematica.util.NetworkServerStorageScope;
@@ -37,6 +38,7 @@ public class ClientTickHandler implements IClientTickHandler
 
             SophisticatedBackpacksCompat.tick(mc);
             QuarkRotationCompat.tick(mc);
+            SchematicPrinter.tick(mc);
             WorldUtils.easyPlaceOnUseTick(mc);
 
             if (Configs.Generic.LAYER_MODE_DYNAMIC.getBooleanValue())
