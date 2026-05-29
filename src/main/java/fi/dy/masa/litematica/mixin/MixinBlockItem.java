@@ -29,8 +29,11 @@ public abstract class MixinBlockItem extends Item
     @Inject(method = "getPlacementState", at = @At("HEAD"), cancellable = true)
     private void modifyPlacementState(ItemPlacementContext ctx, CallbackInfoReturnable<BlockState> cir)
     {
-        if (Configs.Generic.EASY_PLACE_MODE.getBooleanValue() &&
-            Configs.Generic.EASY_PLACE_SP_HANDLING.getBooleanValue())
+        // Printer mode and Easy Place both encode requested state into the hit vector.
+        // Decode that data whenever it is present, even if Easy Place itself is disabled.
+        if ((Configs.Generic.EASY_PLACE_MODE.getBooleanValue() &&
+             Configs.Generic.EASY_PLACE_SP_HANDLING.getBooleanValue()) ||
+            PlacementHandler.hasPlacementProtocolData(ctx))
         {
             BlockState stateOrig = this.getBlock().getPlacementState(ctx);
 

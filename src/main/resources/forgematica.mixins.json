@@ -25,6 +25,7 @@
     "MixinModelOverrideList",
     "MixinRailBlocks",
     "MixinServerPlayNetworkHandler",
+    "MixinWallStandingBlockItem",
     "MixinWorld",
     "MixinWorldChunk",
     "MixinWorldRenderer"

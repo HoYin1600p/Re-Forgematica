@@ -105,9 +105,21 @@ public class PlacementHandler
         }
     }
 
+    public static boolean hasPlacementProtocolData(ItemPlacementContext ctx)
+    {
+        EasyPlaceProtocol protocol = getEffectiveProtocolVersion();
+
+        if (protocol != EasyPlaceProtocol.V3 && protocol != EasyPlaceProtocol.V2)
+        {
+            return false;
+        }
+
+        return getPlacementProtocolValue(ctx.getHitPos(), ctx.getBlockPos()) >= 0;
+    }
+
     public static BlockState applyPlacementProtocolV2(BlockState state, UseContext context)
     {
-        int protocolValue = (int) (context.getHitVec().x - (double) context.getPos().getX()) - 2;
+        int protocolValue = getPlacementProtocolValue(context.getHitVec(), context.getPos());
 
         if (protocolValue < 0)
         {
@@ -167,8 +179,7 @@ public class PlacementHandler
 
     public static <T extends Comparable<T>> BlockState applyPlacementProtocolV3(BlockState state, UseContext context)
     {
-        int protocolValue = (int) (context.getHitVec().x - (double) context.getPos().getX()) - 2;
-        //System.out.printf("raw protocol value in: 0x%08X\n", protocolValue);
+        int protocolValue = getPlacementProtocolValue(context.getHitVec(), context.getPos());
 
         if (protocolValue < 0)
         {
@@ -180,7 +191,6 @@ public class PlacementHandler
         // DirectionProperty - allow all except: VERTICAL_DIRECTION (PointedDripstone)
         if (property != null && property != Properties.VERTICAL_DIRECTION)
         {
-            //System.out.printf("applying: 0x%08X\n", protocolValue);
             state = applyDirectionProperty(state, context, property, protocolValue);
 
             if (state == null)
@@ -213,7 +223,6 @@ public class PlacementHandler
                     int requiredBits = MathHelper.floorLog2(MathHelper.smallestEncompassingPowerOfTwo(list.size()));
                     int bitMask = ~(0xFFFFFFFF << requiredBits);
                     int valueIndex = protocolValue & bitMask;
-                    //System.out.printf("trying to apply valInd: %d, bits: %d, prot val: 0x%08X\n", valueIndex, requiredBits, protocolValue);
 
                     if (valueIndex >= 0 && valueIndex < list.size())
                     {
@@ -222,7 +231,6 @@ public class PlacementHandler
                         if (state.get(prop).equals(value) == false &&
                             value != SlabType.DOUBLE) // don't allow duping slabs by forcing a double slab via the protocol
                         {
-                            //System.out.printf("applying %s: %s\n", prop.getName(), value);
                             state = state.with(prop, value);
                         }
 
@@ -237,6 +245,11 @@ public class PlacementHandler
         }
 
         return state;
+    }
+
+    private static int getPlacementProtocolValue(Vec3d hitVec, BlockPos pos)
+    {
+        return (int) (hitVec.x - (double) pos.getX()) - 2;
     }
 
     private static BlockState applyDirectionProperty(BlockState state, UseContext context,
@@ -259,8 +272,6 @@ public class PlacementHandler
                 facing = context.getEntity().getHorizontalFacing().getOpposite();
             }
         }
-
-        //System.out.printf("plop facing: %s -> %s (raw: %d, dec: %d)\n", facingOrig, facing, rawFacingIndex, decodedFacingIndex);
 
         if (facing != facingOrig && property.getValues().contains(facing))
         {

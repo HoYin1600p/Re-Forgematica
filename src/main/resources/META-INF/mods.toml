@@ -5,15 +5,15 @@ license = "LGPLv3"
 [[mods]]
 modId = "forgematica"
 version = "${version}"
-displayName = "Forgematica"
-displayURL="https://github.com/ThinkingStudios/Litematica-Forge" #optional
+displayName = "Re-Forgematica"
+displayURL="https://github.com/HoYin1600p/Re-Forgematica" #optional
 logoFile="icon.png" #optional
 credits="masa" #optional
-authors="TexTrue, ThinkingStudio" #optional
+authors="HoYin1600p, TexTrue, ThinkingStudio" #optional
 description = '''
-Litematica unofficial forge port.
+Re-Forgematica fork of the unofficial Litematica Forge port.
 
-A modern schematic mod for Forge.
+Adds survival-focused Forge 1.18.2 schematic workflow improvements.
 '''
 
 [[dependencies.forgematica]]

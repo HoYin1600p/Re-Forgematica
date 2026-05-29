@@ -10,11 +10,11 @@ This fork focuses on survival building workflows on Forge servers, especially Ea
 
 Re-Forgematica adds a normal Minecraft/Forge Controls entry:
 
-- Category: `Forgematica`
+- Category: `Re-Forgematica`
 - Key: `Open Menu`
-- Default: `L`
+- Default: unbound
 
-The original internal Litematica/Forgematica main-menu hotkey no longer has a default key assigned, so the Forge Controls key is the default way to open the menu. The rest of the existing Litematica/Forgematica hotkeys remain configurable from inside the mod's own config screens.
+The original internal Litematica/Forgematica main-menu hotkey no longer has a default key assigned. Bind the Forge Controls entry if you want a standard Minecraft Controls key for opening the menu. The rest of the existing Litematica/Forgematica hotkeys remain configurable from inside the mod's own config screens.
 
 ### Sophisticated Backpacks Support
 
@@ -54,6 +54,30 @@ The existing Litematica Easy Place protocols are preserved:
 - Carpet-compatible v2 handling is left unchanged.
 - Multiplayer without Carpet still keeps the existing slab-only behavior.
 - Quark rotation lock is only attempted when the active Easy Place protocol is `Slabs only` or `None`, so it does not compete with Carpet or v3 placement handling.
+
+### Native Schematic Printer
+
+Re-Forgematica includes a native printer mode for placing rendered schematic blocks around the player using normal placement packets.
+
+Printer controls and settings are available in the mod config:
+
+- `printerMode`: toggles automatic printing.
+- `printerInterval`: controls how many client ticks to wait between placement attempts.
+- `printerRange`: controls the placement scan range, defaulting to `4.5` blocks.
+- `printerActivation`: hold key, default `V`, to print while held.
+- `printerToggle`: toggle key, default `CAPS_LOCK`, to turn printer mode on and off.
+
+The printer only scans blocks inside the current rendered layer range, so rendering one layer at a time also limits what the printer will place. It uses the existing creative pick-block path in creative mode and the existing inventory selection path in survival mode, including Sophisticated Backpacks item pulls when that integration is available.
+
+Placement handling has been hardened for common schematic edge cases:
+
+- Top slabs and stair halves use adjusted hit positions so they do not default to bottom placement.
+- End rods, rods, ladders, wall banners, wall signs, wall skulls, wall torches, buttons, levers, trapdoors, and other face-sensitive blocks prefer the schematic face instead of any nearby valid face.
+- Observers, repeaters, comparators, pistons, dispensers, droppers, and other directional redstone-style blocks use schematic orientation instead of the player's current look direction.
+- Standing heads/skulls preserve their 16-step schematic rotation and click the support block below so they place on the top surface instead of becoming wall skulls.
+- Double-height blocks such as doors, tall plants, and banner-style blocks are guarded so partially rendered layers do not cause the wrong half to be placed.
+
+The printer was implemented independently for this fork. Its behavior was informed by Minecraft placement mechanics, Litematica Easy Place protocol handling, and the open-source Forgematica printer ecosystem, especially NeoForgematicaPrinter.
 
 ### Proxy Server Storage Scoping
 
@@ -99,6 +123,8 @@ If an optional integration fails to initialize, it disables itself and the base 
 - [Forgematica / Litematica-Forge](https://github.com/ThinkingStudios/Litematica-Forge) by TexTrue and ThinkingStudio: Forge port used as the base for this fork.
 - [Sophisticated Backpacks](https://www.curseforge.com/minecraft/mc-mods/sophisticated-backpacks) by P3pp3rF1y: optional backpack integration target.
 - [Quark](https://github.com/VazkiiMods/Quark) by Vazkii and contributors: optional rotation-lock integration target.
+- [NeoForgematicaPrinter](https://github.com/Reime0/NeoForgematicaPrinter) by Reime0: behavioral reference and inspiration for printer rotation/placement handling.
+- Original [ForgematicaPrinter](https://github.com/ThinkingStudio/ForgematicaPrinter) work credited by NeoForgematicaPrinter: prior printer project that NeoForgematicaPrinter was based on.
 
 ## Licensing
 

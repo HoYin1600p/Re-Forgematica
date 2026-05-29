@@ -160,7 +160,7 @@ Related files:
 
 Behavior added:
 
-- Adds normal Minecraft/Forge Controls category: `Forgematica`
+- Adds normal Minecraft/Forge Controls category: `Re-Forgematica`
 - Adds keybind: `Open Menu`
 - Default key: unbound (`InputUtil.UNKNOWN_KEY`)
 - Opens the existing Litematica/Forgematica main menu.
@@ -232,11 +232,33 @@ Native printer rotation support:
 
 - Before sending the placement interaction, the printer simulates candidate player rotations against Minecraft's own `BlockItem#getPlacementState(...)`.
 - Candidate rotations cover the four horizontal directions plus straight up/down.
-- The best matching simulated rotation is sent with `PlayerMoveC2SPacket.LookAndOnGround`.
-- Matching currently scores common orientation/state properties such as `FACING`, `HORIZONTAL_FACING`, `AXIS`, `BLOCK_HALF`, `SLAB_TYPE`, `ROTATION`, `WALL_MOUNT_LOCATION`, `DOOR_HINGE`, `CHEST_TYPE`, and `STAIR_SHAPE`.
+- The simulation also tries all six clicked block faces, so face-sensitive blocks like end rods can choose horizontal placement instead of always using the printer's original upward click face.
+- Generic simulation only tries target-space hit results. It does not try neighboring support-face clicks for normal blocks, because that can place blocks into adjacent positions when the next render layer has support below it.
+- Candidate support faces are ordered by the schematic state's own facing properties before fallback/all directions, so exact-match ties prefer the intended schematic face.
+- Support-face placements are performed while temporarily sneaking, matching normal player shift-place behavior so interactable support blocks like trapdoors do not consume the right-click and open/close instead.
+- Blocks with a required clicked support face now use a direct singleton support-face placement plan instead of generic face guessing.
+- This strict support-face path covers `WALL_MOUNT_LOCATION` blocks such as buttons/levers, vanilla wall-attached blocks such as wall banners/signs/skulls/torches and ladders, plus modded wall-attached blocks whose class name/facing properties expose the same wall-facing pattern.
+- Wall banners need this direct placement plan because banner items are `StandingAndWallBlockItem`s; the generic `BlockItem#getBlock().getPlacementState(...)` simulation only represents the standing banner block and cannot infer wall-banner placement.
+- The best matching simulated rotation is applied locally during the actual `interactBlock` call and sent with `PlayerMoveC2SPacket.Full`, then the player's visible rotation is restored.
+- Matching scores all shared block-state properties instead of a hardcoded vanilla-only list, so modded stick/rod-style blocks can work if their placement result exposes the right state properties.
+- Runtime/transient properties that normal placement cannot force are ignored by property name while scoring simulated placement matches: `powered`, `triggered`, `extended`, `locked`, `lit`, and `enabled`.
+- Directional redstone components keep a direct orientation fallback before generic simulation, covering observers/repeaters/comparators/pistons/dispensers/droppers when a protocol mode cannot encode full state.
+- Observers are special-cased because vanilla observer placement uses the player look direction as `FACING`, while most other generic `FACING` redstone blocks use the opposite.
+- Compared against NeoForgematicaPrinter after observer failures: it does not have an observer-specific guide, but its prepare action sends a full position+rotation movement packet before placement. The printer now sends `PlayerMoveC2SPacket.Full` instead of look-only so server-side placement sees the intended rotation before the interact packet.
+- The `BlockItem#getPlacementState` mixin now decodes accurate-placement protocol data whenever encoded hit-vector data is present, even if Easy Place mode is off. This is the primary fix for printer-driven directional state: printer mode uses the same protocol data as Easy Place, so observers and other directional blocks are not left to vanilla player-look placement when the user is printing with Easy Place disabled.
+- Standing heads/skulls, plus other `ROTATION`/16-step standing blocks, have a direct yaw fallback modeled after NeoForgematicaPrinter's rotation guide. Their placement plan clicks the top face of the support block below the schematic position while preserving the encoded hit-vector data, so `WallStandingBlockItem` chooses the standing/floor variant instead of a wall variant.
+- Skull items inherit placement from `WallStandingBlockItem`, which overrides `BlockItem#getPlacementState`; `MixinWallStandingBlockItem` applies the same encoded hit-vector protocol decode there so printer placements can force `ROTATION` even when Easy Place mode is off. Wall-mounted heads/skulls continue through the strict support-face path.
+- Exact block-state matches are strongly preferred and mismatched properties are penalized, which helps blocks like ladders choose the schematic face when multiple adjacent faces are valid placement targets.
 - If simulation cannot find a useful rotation, the printer falls back to a property-based look-direction heuristic.
 - Existing Easy Place placement protocol hit-vector support is still applied for v3, Carpet v2, and slab-only behavior.
+- Printer hit vectors always run through the slab/stair Y-position helper after protocol encoding, so top slabs/top-half blocks placed into air do not default to bottom placement.
 - Existing Quark rotation lock is still applied afterward when its protocol scope allows it.
+- Before swapping items or placing, the printer checks `BlockState#canPlaceAt` against the real client world. This makes supported blocks such as banners, buttons, levers, and ladders wait until their required support face/block exists instead of attaching to some other valid nearby surface.
+- Layered double-height handling:
+  - Blocks using the vanilla double-block-half property skip their lower half during printer scans.
+  - When the upper half is rendered, the printer resolves the placement anchor.
+  - Doors and tall plants use the matching lower schematic block as the placement anchor because vanilla places them from the bottom.
+  - Other double-height blocks using the same property are treated as top-anchored, which covers banner-style blocks whose connection point is above the lower visual half.
 
 Current limitations / next likely work:
 
@@ -244,6 +266,15 @@ Current limitations / next likely work:
 - It does normal block placement and orientation assistance.
 - It does not yet implement post-placement interaction guides such as stripping logs, lighting candles, filling flower pots, editing signs, tilling dirt, or cycling block states.
 - More block-family-specific guide logic can be added after in-game testing identifies gaps.
+
+End-of-night printer handoff, 2026-05-28:
+
+- Latest confirmed good test from user: the strict support-face rule fixed wall banners/ladders attaching to the wrong nearby face.
+- Regression found immediately after: when moving to the next render layer, normal blocks/slabs could be double-placed one block higher because generic placement simulation was allowed to click neighboring support faces.
+- Fix applied: generic simulation now only tries hit results inside the target blockspace. Neighbor support-face clicks are reserved for blocks with a required clicked support face via `getDirectPlacementPlan(...)`.
+- `.\gradlew.bat build` passed after that fix.
+- Latest jar to test: `build/libs/re-forgematica-1.0.1-1.18.2.jar`.
+- Next defensive hardening idea: before sending a printer placement interaction, derive the actual `ItemPlacementContext` placement position and reject the plan unless it targets the intended schematic position. Allow known exceptions only when the schematic intentionally merges into the same block, such as the second half of a double slab.
 
 ## GitHub Issue Template
 
@@ -262,24 +293,32 @@ Files changed:
 
 - `build.gradle`
 - `gradle.properties`
+- `src/main/resources/icon.png`
 
 Current artifact naming:
 
 - `archives_base_name=re-forgematica`
-- `mod_version=1.0.0`
+- `mod_version=1.0.1`
 - `version = "${project.mod_version}-${project.minecraft_version}"`
 
 Current built jar:
 
 ```text
-build/libs/re-forgematica-1.0.0-1.18.2.jar
+build/libs/re-forgematica-1.0.1-1.18.2.jar
 ```
 
 Current sources jar:
 
 ```text
-build/libs/re-forgematica-1.0.0-1.18.2-sources.jar
+build/libs/re-forgematica-1.0.1-1.18.2-sources.jar
 ```
+
+Current mod icon:
+
+- `src/main/resources/icon.png`
+- `src/main/resources/assets/forgematica/icon.png`
+- Source provided by user: `E:\server\Re-Forgematica\mod-icon.png`
+- `META-INF/mods.toml` still references `logoFile="icon.png"`.
 
 ## Important Implementation Constraints
 
@@ -309,7 +348,7 @@ BUILD SUCCESSFUL
 Built jar path from the latest build:
 
 ```text
-build/libs/re-forgematica-1.0.0-1.18.2.jar
+build/libs/re-forgematica-1.0.1-1.18.2.jar
 ```
 
 ## Published Git State

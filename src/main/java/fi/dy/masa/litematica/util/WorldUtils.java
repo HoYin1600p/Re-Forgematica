@@ -534,8 +534,6 @@ public class WorldUtils
 
                 BlockHitResult hitResult = new BlockHitResult(hitPos, side, pos, false);
 
-                //System.out.printf("pos: %s side: %s, hit: %s\n", pos, side, hitPos);
-                // pos, side, hitPos
                 interactBlockWithOptionalQuarkRotationLock(mc, hand, hitResult, stateSchematic, protocol);
 
                 if (stateSchematic.getBlock() instanceof SlabBlock && stateSchematic.get(SlabBlock.TYPE) == SlabType.DOUBLE)
@@ -736,7 +734,6 @@ public class WorldUtils
 
                     if (valueIndex != -1)
                     {
-                        //System.out.printf("requesting: %s = %s, index: %d\n", prop.getName(), state.get(prop), valueIndex);
                         protocolValue |= (valueIndex << shiftAmount);
                         shiftAmount += requiredBits;
                         ++propCount;
@@ -752,7 +749,6 @@ public class WorldUtils
         if (propCount > 0)
         {
             double x = pos.getX() + relX + 2 + protocolValue;
-            //System.out.printf("request prot value 0x%08X\n", protocolValue + 2);
             return new Vec3d(x, hitVecIn.y, hitVecIn.z);
         }
 
