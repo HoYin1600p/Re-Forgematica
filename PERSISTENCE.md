@@ -91,10 +91,13 @@ Primary file:
 Related files:
 
 - `src/main/java/fi/dy/masa/litematica/mixin/MixinClientPlayerEntity.java`
+- `src/main/java/fi/dy/masa/litematica/mixin/MixinScreen.java`
 - `src/main/resources/forgematica.mixins.json`
 - `src/main/java/fi/dy/masa/litematica/data/DataManager.java`
 - `src/main/java/fi/dy/masa/litematica/event/WorldLoadListener.java`
 - `src/main/java/fi/dy/masa/litematica/scheduler/ClientTickHandler.java`
+- `src/main/java/org/thinkingstudio/forgematica/network/ServerScopeNetworking.java`
+- `src/main/java/org/thinkingstudio/forgematica/network/ServerStorageScopeIdentity.java`
 - `src/main/java/fi/dy/masa/litematica/world/SchematicWorldHandler.java`
 
 Problem addressed:
@@ -105,6 +108,9 @@ Behavior added:
 
 - Outgoing chat commands are watched client-side.
 - Configured transfer command names are treated as backend server aliases.
+- The production network uses direct backend-name commands such as `/millennium`, `/vault`, `/test`, and `/usatest`, not `/server <name>`.
+- If installed server-side, each backend sends a stable storage scope ID to clients on login. This is preferred over command sniffing because it works for direct login and non-chat transfer flows.
+- Server-side identity is stored in `config/forgematica-server.properties`. Blank `serverStorageScopeName` uses an auto-generated `serverStorageScopeId` UUID; setting `serverStorageScopeName` gives a human-readable stable alias.
 - Before a transfer command is sent, current placement data is saved.
 - After the new world loads, the pending alias becomes the active storage scope.
 - Placement storage filenames include the backend alias.
@@ -114,14 +120,15 @@ Default Generic config:
 
 - `serverStorageScopeFromCommands`: `true`
 - `serverStorageScopeCommands`: `millennium, vaulthalla, eon, century, asgard, pog, lobby, omega, echo, vault`
+- Live test additions used in Prism: `test, usatest`
 - `serverStorageScopeInitial`: empty
 
 Use `serverStorageScopeInitial` only if the first backend after login is always known. Example: set it to `lobby` if every session starts in lobby.
 
 Compatibility:
 
-- Normal single-player and direct multiplayer clients remain unscoped unless a configured command is sent.
-- This does not require Velocity APIs or server-side plugin support.
+- Normal single-player and direct multiplayer clients remain unscoped unless a configured command is sent or a Re-Forgematica backend identity packet is received.
+- This does not require Velocity APIs or separate server-side plugin support. The same jar can run on the server for the identity packet path.
 
 ## Server Transfer Crash / Render Hardening
 
@@ -269,6 +276,43 @@ Current limitations / next likely work:
 - It does not yet implement post-placement interaction guides such as stripping logs, lighting candles, filling flower pots, editing signs, tilling dirt, or cycling block states.
 - More block-family-specific guide logic can be added after in-game testing identifies gaps.
 
+1.0.4 release handoff, 2026-05-29:
+
+- Version bumped from `1.0.3` to `1.0.4` in `gradle.properties`.
+- Fixed connection compatibility for servers that do not have Re-Forgematica installed.
+- `ServerScopeNetworking` now uses `NetworkRegistry.acceptMissingOr(PROTOCOL_VERSION)` for both client and server version predicates.
+- This keeps the backend identity packet optional: installed servers can send a scope ID, while missing-server-channel connections fall back to client-side command scoping.
+- `README.md`, `CHANGELOG.md`, `CURSEFORGE_RELEASES.md`, and this persistence file were updated for 1.0.4.
+- Final build passed with `.\gradlew.bat build`.
+- Final jar for release testing/publishing: `build/libs/re-forgematica-1.0.4-1.18.2.jar`.
+- Final sources jar: `build/libs/re-forgematica-1.0.4-1.18.2-sources.jar`.
+- Follow-up live test finding: command aliases must be pending transfer hints, not immediate loads. The command path saves current placements, preserves the current scope through disconnect, and applies the pending alias after the next world load only if no server identity packet supersedes it.
+- Mixed install finding: if the destination backend has Re-Forgematica installed server-side, the server-provided UUID/name is authoritative after reconnect. Command aliases remain the fallback for backends without the server-side identity packet.
+- Same-server reconnect finding: a configured command such as `/usatest` can reconnect the player even when already scoped as `usatest`. Active scoped storage must remember the last valid server/world name and dimension so reconnect timing cannot fall through to `forgematica_default.json`.
+- Live instance config had `usatestt`; corrected it to `usatest` in `config/forgematica.json`.
+- After live testing confirmed the fix, temporary `[storage-scope]` diagnostic logging and the unused `commandScopeActive` bookkeeping were removed.
+- Release docs were updated for CurseForge publication: `README.md`, `CHANGELOG.md`, `CURSEFORGE_RELEASES.md`, and this persistence file.
+- Current cleaned test jar copied to the Prism instance has SHA-256 `8A508288AFFF0DB1B0FEAE89CB7B0EB8B7EA2A5FCA81DF6A0AFB60482D0129A8`.
+
+1.0.3 release handoff, 2026-05-29:
+
+- Version bumped from `1.0.2` to `1.0.3` in `gradle.properties`.
+- Added optional server-side backend identity packet support:
+  - `src/main/java/org/thinkingstudio/forgematica/network/ServerScopeNetworking.java`
+  - `src/main/java/org/thinkingstudio/forgematica/network/ServerScopePacket.java`
+  - `src/main/java/org/thinkingstudio/forgematica/network/ServerStorageScopeIdentity.java`
+  - `src/main/java/org/thinkingstudio/forgematica/network/ServerStorageScopeEvents.java`
+- Server config `config/forgematica-server.properties` auto-generates `serverStorageScopeId` on each backend. `serverStorageScopeName` can override it with a readable stable alias.
+- Common/server registration is in `src/main/java/org/thinkingstudio/forgematica/Forgematica.java`; client-only render, GUI, schematic, hotkey, MaLiLib, and MaFgLib initialization is isolated in `src/main/java/org/thinkingstudio/forgematica/client/ForgematicaClient.java` and called only on `Dist.CLIENT`.
+- `META-INF/mods.toml` marks `mafglib` as `side = "CLIENT"` so dedicated servers do not require MaFgLib for the backend identity packet path.
+- Added `MixinScreen` so direct chat command submissions are captured earlier than `ClientPlayerEntity.sendChatMessage`; command sniffing remains a fallback when server identity packets are unavailable.
+- Fixed unbound printer activation being treated as active by guarding `isKeybindHeld()` with a non-empty key list.
+- Fixed the dedicated-server mod loading failure reported in `crash-2026-05-29_22.44.51-fml.txt`, where Forge rejected the jar because MaFgLib was still declared as a server-side dependency.
+- `README.md`, `CHANGELOG.md`, `CURSEFORGE_RELEASES.md`, and this persistence file were updated for 1.0.3.
+- Final build passed with `.\gradlew.bat build`.
+- Final jar for release testing/publishing: `build/libs/re-forgematica-1.0.3-1.18.2.jar`.
+- Final sources jar: `build/libs/re-forgematica-1.0.3-1.18.2-sources.jar`.
+
 1.0.2 release handoff, 2026-05-29:
 
 - Removed the default `V` and `CAPS_LOCK` printer hotkeys.
@@ -327,19 +371,19 @@ Files changed:
 Current artifact naming:
 
 - `archives_base_name=re-forgematica`
-- `mod_version=1.0.2`
+- `mod_version=1.0.4`
 - `version = "${project.mod_version}-${project.minecraft_version}"`
 
 Current built jar:
 
 ```text
-build/libs/re-forgematica-1.0.2-1.18.2.jar
+build/libs/re-forgematica-1.0.4-1.18.2.jar
 ```
 
 Current sources jar:
 
 ```text
-build/libs/re-forgematica-1.0.2-1.18.2-sources.jar
+build/libs/re-forgematica-1.0.4-1.18.2-sources.jar
 ```
 
 Current mod icon:
@@ -351,9 +395,13 @@ Current mod icon:
 
 ## Important Implementation Constraints
 
+- Do not bump `mod_version`, update release-version headings, or prepare a new release version unless the user explicitly asks for a version bump or release prep. Bugfix builds for live testing may stay on the current version until the user decides to publish.
 - Optional integrations must remain optional. Do not add hard dependencies on Quark or Sophisticated Backpacks unless the mod metadata and distribution model are intentionally changed.
 - Runtime reflection failures should disable only that compatibility layer, not the whole mod.
-- Avoid server-specific APIs for backend scoping. The current implementation is client-only and command-alias based.
+- Keep dedicated-server code limited to backend identity generation and packet sending. Rendering, GUI, schematic, hotkey, MaLiLib, and MaFgLib paths must stay client-only.
+- Command-alias backend scoping remains the client-side fallback when a server identity packet is unavailable.
+- Live server-transfer debugging showed two persistence hazards: command aliases must be treated as pending transfer hints, not immediate loads, and active scoped storage must not fall back to `forgematica_default.json` while Minecraft temporarily has no server/world name during reconnect.
+- When a server provides its own UUID scope, that server-provided scope is authoritative after reconnect; command aliases are still needed for backend switches where the destination server does not have Re-Forgematica installed server-side.
 - Do not remove the delayed second Quark lock-clear unless another fallback is added.
 - Do not copy NeoForgematicaPrinter source directly unless the licensing plan is intentionally changed; it is AGPLv3.
 - Keep printer behavior throttled by `printerInterval`; do not make it place entire schematics instantly.
@@ -377,7 +425,7 @@ BUILD SUCCESSFUL
 Built jar path from the latest build:
 
 ```text
-build/libs/re-forgematica-1.0.2-1.18.2.jar
+build/libs/re-forgematica-1.0.4-1.18.2.jar
 ```
 
 ## Published Git State

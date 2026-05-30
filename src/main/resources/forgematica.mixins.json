@@ -24,6 +24,7 @@
     "MixinMinecraftClient",
     "MixinModelOverrideList",
     "MixinRailBlocks",
+    "MixinScreen",
     "MixinServerPlayNetworkHandler",
     "MixinWallStandingBlockItem",
     "MixinWorld",

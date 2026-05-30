@@ -2,14 +2,17 @@
 
 Re-Forgematica is a fork of [Forgematica / Litematica-Forge](https://github.com/ThinkingStudios/Litematica-Forge), the unofficial Forge port of [Litematica](https://github.com/maruohon/litematica).
 
-This fork focuses on survival building workflows on Forge servers, especially Easy Place behavior with backpack storage, orientation helpers, and proxy-style server networks.
+This fork focuses on survival building workflows on Forge servers, especially Easy Place behavior with backpack storage, orientation helpers, native printing, and proxy-style server networks with backend-aware placement storage.
 
 ## Latest Patch
 
-### 1.0.2
+### 1.0.4
 
-- Removed the default `V` and `CAPS_LOCK` printer hotkeys so printer activation and toggle start unbound.
-- Existing users can still bind printer activation and toggle keys from the mod config.
+- Made the backend identity packet channel optional so clients can still join servers without Re-Forgematica installed.
+- Servers with Re-Forgematica installed can still send stable backend IDs for placement storage scoping.
+- Servers without Re-Forgematica fall back to client-side command-based scoping.
+- Improved proxy/server reconnect persistence so loaded schematics stay scoped to the correct backend after commands such as `/test` and `/usatest`.
+- Prevented reconnect timing from falling back to `forgematica_default.json` while the client is between worlds.
 
 ## Changes In This Fork
 
@@ -90,6 +93,11 @@ The printer was implemented independently for this fork. Its behavior was inform
 
 Re-Forgematica can separate loaded schematic placement data by backend server alias, not just by Minecraft dimension. This is intended for Velocity/Bungee-style networks where multiple servers use the same dimension names and players transfer between servers with commands.
 
+When Re-Forgematica is also installed on backend servers, each backend sends a stable storage scope ID to clients on login. The server-side portion is intentionally tiny and does not initialize the rendering, GUI, schematic, or hotkey systems. It does not require MaFgLib on dedicated servers; MaFgLib is still required on clients. It only sends an identity packet. Each backend stores its identity in `config/forgematica-server.properties`:
+
+- `serverStorageScopeId`: auto-generated UUID fallback.
+- `serverStorageScopeName`: optional stable alias to send instead of the UUID.
+
 The Generic tab includes these options:
 
 - `serverStorageScopeFromCommands`: enables command-based backend scoping.
@@ -106,12 +114,15 @@ With that list, sending `/millennium`, `/lobby`, `/omega`, and the other configu
 
 If your network always logs players into a known server first, set `serverStorageScopeInitial` to that server alias, for example `lobby`. If it is left empty, Re-Forgematica starts unscoped until a configured transfer command is sent.
 
+During proxy transfers, command aliases are treated as pending transfer hints instead of immediate storage loads. This lets Re-Forgematica save the current backend first, wait for the next world to load, and then apply either the pending command alias or the server-provided backend identity. If the client briefly lacks a server/world name during reconnect, the last known scoped server and dimension are reused so placement storage does not fall back to the default JSON file.
+
 ### Server Transfer Hardening
 
 Re-Forgematica includes lifecycle hardening for server transfers where the client world can briefly be missing or replaced:
 
 - Saves current placement data immediately before a configured server transfer command is sent.
-- Promotes the pending backend scope after the new world loads.
+- Promotes the pending backend scope after the new world loads, unless the destination server provides its own backend identity packet.
+- Keeps active scoped storage away from the default JSON file during reconnect timing gaps.
 - Recreates the schematic world if the client reconnects before it is available.
 - Reloads placement data after transfer recovery.
 - Adds null guards around schematic rendering, material lists, ray tracing, and placement helpers while the transfer is in progress.

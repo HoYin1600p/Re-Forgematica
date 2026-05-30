@@ -6,6 +6,7 @@ import fi.dy.masa.litematica.data.DataManager;
 import fi.dy.masa.litematica.materials.MaterialCache;
 import fi.dy.masa.litematica.world.SchematicWorldHandler;
 import fi.dy.masa.litematica.world.WorldSchematic;
+import fi.dy.masa.malilib.hotkeys.IKeybind;
 import net.minecraft.block.*;
 
 
@@ -186,8 +187,13 @@ public class SchematicPrinter
 
     private static boolean isActive()
     {
-        return Configs.Generic.PRINTER_MODE.getBooleanValue() ||
-               Hotkeys.PRINTER_ACTIVATION.getKeybind().isKeybindHeld();
+        if (Configs.Generic.PRINTER_MODE.getBooleanValue())
+        {
+            return true;
+        }
+
+        IKeybind activationKeybind = Hotkeys.PRINTER_ACTIVATION.getKeybind();
+        return activationKeybind.getKeys().isEmpty() == false && activationKeybind.isKeybindHeld();
     }
 
     private static boolean tryPlaceOne(MinecraftClient mc)

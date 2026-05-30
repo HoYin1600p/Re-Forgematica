@@ -12,7 +12,7 @@ Rules for future updates:
 ## Short Summary
 
 ```markdown
-Forge 1.18.2 schematic building fork with backpack-aware Easy Place, optional Quark rotation help, proxy-safe storage, and a native printer for rendered layers.
+Forge 1.18.2 schematic building fork with backpack-aware Easy Place, optional Quark rotation help, server-aware storage, and a native printer.
 ```
 
 ## Project Description Copy
@@ -36,6 +36,7 @@ This fork keeps the familiar Forgematica/Litematica workflow while adding practi
 - Limits printer placement to the currently rendered schematic layers
 - Improves printer placement for slabs, stairs, rods, ladders, banners, doors, heads, skulls, and directional redstone-style blocks
 - Keeps schematic placement data separated across configured backend servers
+- Can use server-provided backend identity packets so clients load the correct placements after direct login or proxy transfers
 - Improves stability when transferring between servers on a network
 - Helps prevent schematics from appearing on the wrong backend server
 
@@ -69,9 +70,24 @@ Both integrations are optional. The mod still works without them.
 ## Requirements
 
 - Minecraft Forge 1.18.2
-- MaFgLib
+- MaFgLib on clients; dedicated servers do not need MaFgLib for backend identity packets
 
 ## Version Highlights
+
+### 1.0.4
+
+- Made backend identity packets optional for connection compatibility
+- Clients can join servers that do not have Re-Forgematica installed
+- Servers with Re-Forgematica installed can still send backend IDs for placement storage scoping
+- Improved proxy/server reconnect persistence so loaded schematics stay attached to the correct backend after server-switch commands
+- Prevented reconnect timing from falling back to default placement storage
+
+### 1.0.3
+
+- Added optional server-side backend identity packets for proxy/server networks
+- Backend servers auto-generate stable UUIDs for client placement storage scoping
+- Kept render, GUI, schematic, and hotkey systems client-only on servers
+- Dedicated servers no longer require MaFgLib just to run the backend identity packet path
 
 ### 1.0.2
 
@@ -82,6 +98,38 @@ Both integrations are optional. The mod still works without them.
 Re-Forgematica is based on Forgematica / Litematica-Forge, which is based on Litematica by masa.
 
 The native printer was implemented independently for this fork, with behavior informed by Minecraft placement mechanics, Litematica Easy Place handling, and the open-source Forgematica printer ecosystem. Recognition goes to NeoForgematicaPrinter by Reime0 and the original ForgematicaPrinter project credited upstream by NeoForgematicaPrinter.
+```
+
+## 1.0.4
+
+### Release Copy
+
+```markdown
+## 1.0.4
+
+- Made the backend identity packet channel optional
+- Re-Forgematica clients can now join servers that do not have Re-Forgematica installed
+- Servers with Re-Forgematica installed still send stable backend IDs for placement storage scoping
+- Servers without Re-Forgematica use the existing client-side command fallback
+- Improved schematic placement persistence when switching between proxy/backend servers
+- Fixed reconnect timing where loaded schematics could be saved or loaded from the default storage file instead of the active backend scope
+- Backend command aliases are now handled as transfer hints, so placements are saved before the switch and loaded after the destination world is ready
+```
+
+## 1.0.3
+
+### Dev Copy
+
+```markdown
+## 1.0.3
+
+- Added optional server-side backend identity packets for proxy/server networks
+- Each backend server can auto-generate a stable UUID in `config/forgematica-server.properties`
+- Clients use the server-provided identity to load the correct schematic placements on login
+- Command-based backend scoping remains available as a fallback
+- Server-side loading is intentionally minimal and does not initialize rendering, GUI, hotkey, or schematic systems
+- MaFgLib is a client-only dependency; dedicated servers can run this jar without MaFgLib installed
+- Fixed unbound printer activation being treated as always held
 ```
 
 ## 1.0.2

@@ -3,6 +3,7 @@ package fi.dy.masa.litematica.util;
 import fi.dy.masa.litematica.config.Configs;
 import fi.dy.masa.litematica.data.DataManager;
 import fi.dy.masa.malilib.util.FileUtils;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.world.ClientWorld;
 
 import javax.annotation.Nullable;
@@ -18,6 +19,7 @@ public class NetworkServerStorageScope
 
     @Nullable private static String activeScope;
     @Nullable private static String pendingScope;
+    private static boolean keepScopeDuringTransfer;
 
     public static void onClientChatMessage(String message)
     {
@@ -37,7 +39,7 @@ public class NetworkServerStorageScope
         String command = parts[0].toLowerCase(Locale.ROOT);
         Set<String> commands = getConfiguredCommands();
 
-        if (commands.contains(command) == false)
+        if (commands.contains(command) == false && usesConfiguredCommandArgument(command, parts, commands) == false)
         {
             return;
         }
@@ -48,9 +50,7 @@ public class NetworkServerStorageScope
         }
 
         String target = parts.length >= 2 ? parts[1] : command;
-        setPendingScope(target);
-
-        DataManager.saveForServerTransfer();
+        setPendingScopeFromCommand(target);
     }
 
     public static void onWorldLoadPost(@Nullable ClientWorld worldAfter)
@@ -62,14 +62,18 @@ public class NetworkServerStorageScope
                 activeScope = pendingScope;
                 pendingScope = null;
             }
-            else if (activeScope == null)
+
+            keepScopeDuringTransfer = false;
+
+            if (activeScope == null)
             {
                 activeScope = getInitialScope();
             }
         }
-        else if (pendingScope == null)
+        else if (keepScopeDuringTransfer == false)
         {
             activeScope = null;
+            pendingScope = null;
         }
     }
 
@@ -79,14 +83,56 @@ public class NetworkServerStorageScope
         return Configs.Generic.SERVER_STORAGE_SCOPE_FROM_COMMANDS.getBooleanValue() ? activeScope : null;
     }
 
-    private static void setPendingScope(String target)
+    public static void setServerProvidedScope(String scope)
     {
-        String safeName = FileUtils.generateSimpleSafeFileName(target.toLowerCase(Locale.ROOT));
-
-        if (safeName != null && safeName.isEmpty() == false)
+        if (Configs.Generic.SERVER_STORAGE_SCOPE_FROM_COMMANDS.getBooleanValue() == false)
         {
-            pendingScope = safeName;
+            return;
         }
+
+        String safeName = getSafeScopeName(scope);
+
+        if (safeName == null || safeName.equals(activeScope))
+        {
+            pendingScope = null;
+            return;
+        }
+
+        MinecraftClient mc = MinecraftClient.getInstance();
+
+        if (mc.world != null)
+        {
+            DataManager.saveForServerTransfer();
+        }
+
+        activeScope = safeName;
+        pendingScope = null;
+        keepScopeDuringTransfer = false;
+
+        if (mc.world != null)
+        {
+            DataManager.load();
+        }
+    }
+
+    private static void setPendingScopeFromCommand(String target)
+    {
+        String safeName = getSafeScopeName(target);
+
+        if (safeName == null)
+        {
+            return;
+        }
+
+        MinecraftClient mc = MinecraftClient.getInstance();
+
+        if (mc.world != null)
+        {
+            DataManager.saveForServerTransfer();
+        }
+
+        pendingScope = safeName;
+        keepScopeDuringTransfer = true;
     }
 
     private static Set<String> getConfiguredCommands()
@@ -118,6 +164,13 @@ public class NetworkServerStorageScope
         return commands;
     }
 
+    private static boolean usesConfiguredCommandArgument(String command, String[] parts, Set<String> commands)
+    {
+        return commandRequiresArgument(command) &&
+               parts.length >= 2 &&
+               commands.contains(parts[1].toLowerCase(Locale.ROOT));
+    }
+
     @Nullable
     private static String getInitialScope()
     {
@@ -131,8 +184,16 @@ public class NetworkServerStorageScope
         return FileUtils.generateSimpleSafeFileName(value.toLowerCase(Locale.ROOT));
     }
 
+    @Nullable
+    private static String getSafeScopeName(String value)
+    {
+        String safeName = FileUtils.generateSimpleSafeFileName(value.toLowerCase(Locale.ROOT));
+        return safeName != null && safeName.isEmpty() == false ? safeName : null;
+    }
+
     private static boolean commandRequiresArgument(String command)
     {
         return "server".equals(command) || "join".equals(command);
     }
+
 }

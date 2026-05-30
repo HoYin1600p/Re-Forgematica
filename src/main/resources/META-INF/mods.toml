@@ -35,4 +35,4 @@ modId = "mafglib"
 mandatory = true
 versionRange = "*"
 ordering = "NONE"
-side = "BOTH"
+side = "CLIENT"

@@ -61,6 +61,8 @@ public class DataManager implements IDirectoryCache
     private static boolean canSave;
     private static boolean isCarpetServer;
     private static long clientTickStart;
+    @Nullable private static String lastScopedWorldOrServerName;
+    @Nullable private static String lastScopedDimensionId;
 
     private final SelectionManager selectionManager = new SelectionManager();
     private final SchematicPlacementManager schematicPlacementManager = new SchematicPlacementManager();
@@ -525,6 +527,15 @@ public class DataManager implements IDirectoryCache
 
             if (name != null)
             {
+                lastScopedWorldOrServerName = name;
+            }
+            else
+            {
+                name = lastScopedWorldOrServerName;
+            }
+
+            if (name != null)
+            {
                 name = name + "_server_" + serverScope;
 
                 if (globalData)
@@ -533,12 +544,25 @@ public class DataManager implements IDirectoryCache
                 }
 
                 World world = MinecraftClient.getInstance().world;
+                String dimensionId = null;
 
                 if (world != null)
                 {
-                    return new File(dir, Reference.MOD_ID + "_" + name + "_dim_" + fi.dy.masa.malilib.util.WorldUtils.getDimensionId(world) + ".json");
+                    dimensionId = fi.dy.masa.malilib.util.WorldUtils.getDimensionId(world);
+                    lastScopedDimensionId = dimensionId;
+                }
+                else
+                {
+                    dimensionId = lastScopedDimensionId;
+                }
+
+                if (dimensionId != null)
+                {
+                    return new File(dir, Reference.MOD_ID + "_" + name + "_dim_" + dimensionId + ".json");
                 }
             }
+
+            return new File(dir, Reference.MOD_ID + "_server_" + serverScope + (globalData ? "" : "_dim_unknown") + ".json");
         }
 
         return new File(dir, StringUtils.getStorageFileName(globalData, Reference.MOD_ID + "_", ".json", "default"));

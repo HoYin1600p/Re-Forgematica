@@ -1,30 +1,20 @@
 package org.thinkingstudio.forgematica;
 
-import fi.dy.masa.litematica.InitHandler;
 import fi.dy.masa.litematica.Reference;
-import fi.dy.masa.litematica.gui.GuiConfigs;
-import fi.dy.masa.malilib.event.InitializationHandler;
-import net.minecraftforge.fml.ModContainer;
-import net.minecraftforge.fml.ModLoadingContext;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.loading.FMLLoader;
-import org.thinkingstudio.mafglib.util.ForgeUtils;
+import org.thinkingstudio.forgematica.client.ForgematicaClient;
+import org.thinkingstudio.forgematica.network.ServerScopeNetworking;
+import org.thinkingstudio.forgematica.network.ServerStorageScopeEvents;
 
 @Mod(Reference.MOD_ID)
 public class Forgematica {
     public Forgematica() {
-        if (FMLLoader.getDist().isClient()) {
-            ModContainer modContainer = ModLoadingContext.get().getActiveContainer();
+        ServerScopeNetworking.init();
+        MinecraftForge.EVENT_BUS.register(ServerStorageScopeEvents.class);
 
-            ForgeUtils.getInstance().getClientModIgnoredServerOnly(modContainer);
-            ForgeKeybindings.init();
-            InitializationHandler.getInstance().registerInitializationHandler(new InitHandler());
-
-            ForgeUtils.getInstance().registerModConfigScreen(modContainer, (screen) -> {
-                GuiConfigs gui = new GuiConfigs();
-                gui.setParent(screen);
-                return gui;
-            });
-        }
+        DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> ForgematicaClient::init);
     }
 }
