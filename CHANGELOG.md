@@ -1,3 +1,8 @@
+## 1.0.2
+
+- Removed the default `V` and `CAPS_LOCK` printer hotkeys so printer activation and toggle start unbound
+- Bumped the mod version to `1.0.2`
+
 ## 1.0.1
 
 - Added native schematic printer mode with configurable placement interval and range

@@ -6,15 +6,10 @@ This fork focuses on survival building workflows on Forge servers, especially Ea
 
 ## Latest Patch
 
-### 1.0.1
+### 1.0.2
 
-- Added native schematic printer mode with configurable placement interval and range.
-- Added printer hold and toggle hotkeys.
-- Added printer support for current rendered layer range, creative pick-block placement, survival inventory selection, and Sophisticated Backpacks item pulls.
-- Improved printer placement for slabs, stairs, rods, ladders, wall-attached blocks, banners, doors, heads/skulls, and directional redstone-style blocks.
-- Added stricter support-face handling so face-attached blocks wait for the intended support block and attach to the schematic face.
-- Added placement protocol decoding for wall/standing block items so skull/head rotation can be forced outside Easy Place mode.
-- Updated the packaged mod icon for the `1.0.1` release.
+- Removed the default `V` and `CAPS_LOCK` printer hotkeys so printer activation and toggle start unbound.
+- Existing users can still bind printer activation and toggle keys from the mod config.
 
 ## Changes In This Fork
 
@@ -76,8 +71,8 @@ Printer controls and settings are available in the mod config:
 - `printerMode`: toggles automatic printing.
 - `printerInterval`: controls how many client ticks to wait between placement attempts.
 - `printerRange`: controls the placement scan range, defaulting to `4.5` blocks.
-- `printerActivation`: hold key, default `V`, to print while held.
-- `printerToggle`: toggle key, default `CAPS_LOCK`, to turn printer mode on and off.
+- `printerActivation`: hold key, default unbound, to print while held.
+- `printerToggle`: toggle key, default unbound, to turn printer mode on and off.
 
 The printer only scans blocks inside the current rendered layer range, so rendering one layer at a time also limits what the printer will place. It uses the existing creative pick-block path in creative mode and the existing inventory selection path in survival mode, including Sophisticated Backpacks item pulls when that integration is available.
 

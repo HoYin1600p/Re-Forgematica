@@ -222,11 +222,11 @@ Printer configs added in Generic:
 Printer hotkeys added:
 
 - `printerActivation`
-  - Default: `V`
+  - Default: unbound
   - Behavior: hold to print even if `printerMode` is off.
   - Uses `KeybindSettings.PRESS_ALLOWEXTRA_EMPTY` so it can function while other keys/buttons are pressed.
 - `printerToggle`
-  - Default: `CAPS_LOCK`
+  - Default: unbound
   - Behavior: toggles `printerMode`.
   - Uses `KeybindSettings.PRESS_ALLOWEXTRA_EMPTY`.
 
@@ -269,6 +269,16 @@ Current limitations / next likely work:
 - It does not yet implement post-placement interaction guides such as stripping logs, lighting candles, filling flower pots, editing signs, tilling dirt, or cycling block states.
 - More block-family-specific guide logic can be added after in-game testing identifies gaps.
 
+1.0.2 release handoff, 2026-05-29:
+
+- Removed the default `V` and `CAPS_LOCK` printer hotkeys.
+- `printerActivation` and `printerToggle` now default to unbound in `src/main/java/fi/dy/masa/litematica/config/Hotkeys.java`.
+- Version bumped from `1.0.1` to `1.0.2` in `gradle.properties`.
+- `README.md`, `CHANGELOG.md`, and `CURSEFORGE_RELEASES.md` now describe the unbound printer defaults.
+- Final build passed with `.\gradlew.bat build`.
+- Final jar for release testing/publishing: `build/libs/re-forgematica-1.0.2-1.18.2.jar`.
+- Final sources jar: `build/libs/re-forgematica-1.0.2-1.18.2-sources.jar`.
+
 1.0.1 release handoff, 2026-05-29:
 
 - Version bumped from `1.0.0` to `1.0.1` in `gradle.properties`.
@@ -292,7 +302,7 @@ End-of-night printer handoff, 2026-05-28:
 - Regression found immediately after: when moving to the next render layer, normal blocks/slabs could be double-placed one block higher because generic placement simulation was allowed to click neighboring support faces.
 - Fix applied: generic simulation now only tries hit results inside the target blockspace. Neighbor support-face clicks are reserved for blocks with a required clicked support face via `getDirectPlacementPlan(...)`.
 - `.\gradlew.bat build` passed after that fix.
-- Latest jar to test: `build/libs/re-forgematica-1.0.1-1.18.2.jar`.
+- Jar to test at that time: `build/libs/re-forgematica-1.0.1-1.18.2.jar`.
 - Next defensive hardening idea: before sending a printer placement interaction, derive the actual `ItemPlacementContext` placement position and reject the plan unless it targets the intended schematic position. Allow known exceptions only when the schematic intentionally merges into the same block, such as the second half of a double slab.
 
 ## GitHub Issue Template
@@ -317,19 +327,19 @@ Files changed:
 Current artifact naming:
 
 - `archives_base_name=re-forgematica`
-- `mod_version=1.0.1`
+- `mod_version=1.0.2`
 - `version = "${project.mod_version}-${project.minecraft_version}"`
 
 Current built jar:
 
 ```text
-build/libs/re-forgematica-1.0.1-1.18.2.jar
+build/libs/re-forgematica-1.0.2-1.18.2.jar
 ```
 
 Current sources jar:
 
 ```text
-build/libs/re-forgematica-1.0.1-1.18.2-sources.jar
+build/libs/re-forgematica-1.0.2-1.18.2-sources.jar
 ```
 
 Current mod icon:
@@ -367,7 +377,7 @@ BUILD SUCCESSFUL
 Built jar path from the latest build:
 
 ```text
-build/libs/re-forgematica-1.0.1-1.18.2.jar
+build/libs/re-forgematica-1.0.2-1.18.2.jar
 ```
 
 ## Published Git State

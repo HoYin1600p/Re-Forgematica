@@ -73,20 +73,27 @@ Both integrations are optional. The mod still works without them.
 
 ## Version Highlights
 
-### 1.0.1
+### 1.0.2
 
-- Added native schematic printer mode
-- Added configurable printer placement delay and range
-- Added printer hold and toggle hotkeys
-- Added rendered-layer-aware printer placement
-- Improved placement handling for slabs, stairs, rods, ladders, wall banners, wall signs, wall skulls, heads, doors, trapdoors, and directional redstone components
-- Added stricter support-face handling so wall-attached blocks attach to the intended schematic face
+- Removed the default `V` and `CAPS_LOCK` printer hotkeys so printer activation and toggle start unbound
 
 ## Credits
 
 Re-Forgematica is based on Forgematica / Litematica-Forge, which is based on Litematica by masa.
 
 The native printer was implemented independently for this fork, with behavior informed by Minecraft placement mechanics, Litematica Easy Place handling, and the open-source Forgematica printer ecosystem. Recognition goes to NeoForgematicaPrinter by Reime0 and the original ForgematicaPrinter project credited upstream by NeoForgematicaPrinter.
+```
+
+## 1.0.2
+
+### Release Copy
+
+```markdown
+## 1.0.2
+
+- Removed the default `V` and `CAPS_LOCK` printer hotkeys
+- Printer activation and printer toggle now start unbound by default
+- Printer controls remain configurable from the mod config
 ```
 
 ## 1.0.1
