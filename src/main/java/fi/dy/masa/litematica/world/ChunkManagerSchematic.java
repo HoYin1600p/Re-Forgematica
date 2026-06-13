@@ -9,6 +9,7 @@ import net.minecraft.world.chunk.WorldChunk;
 import net.minecraft.world.chunk.light.LightingProvider;
 
 import javax.annotation.Nullable;
+import java.util.ArrayList;
 import java.util.function.BooleanSupplier;
 
 public class ChunkManagerSchematic extends ChunkManager
@@ -34,7 +35,12 @@ public class ChunkManagerSchematic extends ChunkManager
     public void loadChunk(int chunkX, int chunkZ)
     {
         ChunkSchematic chunk = new ChunkSchematic(this.world, new ChunkPos(chunkX, chunkZ));
-        this.loadedChunks.put(ChunkPos.toLong(chunkX, chunkZ), chunk);
+        ChunkSchematic oldChunk = this.loadedChunks.put(ChunkPos.toLong(chunkX, chunkZ), chunk);
+
+        if (oldChunk != null)
+        {
+            this.clearChunk(oldChunk);
+        }
     }
 
     @Override
@@ -86,8 +92,24 @@ public class ChunkManagerSchematic extends ChunkManager
 
         if (chunk != null)
         {
-            this.world.unloadedEntities(chunk.getEntityCount());
+            this.clearChunk(chunk);
         }
+    }
+
+    public void unloadAllChunks()
+    {
+        for (ChunkSchematic chunk : new ArrayList<>(this.loadedChunks.values()))
+        {
+            this.clearChunk(chunk);
+        }
+
+        this.loadedChunks.clear();
+    }
+
+    private void clearChunk(ChunkSchematic chunk)
+    {
+        this.world.unloadedEntities(chunk.getEntityCount());
+        chunk.clear();
     }
 
     @Override

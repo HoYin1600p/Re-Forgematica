@@ -74,6 +74,12 @@ Both integrations are optional. The mod still works without them.
 
 ## Version Highlights
 
+### 1.0.5
+
+- Fixed a crash when schematic previews include Powah cables
+- Improved schematic preview chunk cleanup for modded block entities
+- Helps prevent duplicate client-side block entity registrations during schematic rebuilds
+
 ### 1.0.4
 
 - Made backend identity packets optional for connection compatibility
@@ -98,6 +104,19 @@ Both integrations are optional. The mod still works without them.
 Re-Forgematica is based on Forgematica / Litematica-Forge, which is based on Litematica by masa.
 
 The native printer was implemented independently for this fork, with behavior informed by Minecraft placement mechanics, Litematica Easy Place handling, and the open-source Forgematica printer ecosystem. Recognition goes to NeoForgematicaPrinter by Reime0 and the original ForgematicaPrinter project credited upstream by NeoForgematicaPrinter.
+```
+
+## 1.0.5
+
+### Release Copy
+
+```markdown
+## 1.0.5
+
+- Fixed a client crash when rebuilding schematic previews that contain Powah cables
+- Improved schematic-world block entity cleanup when preview chunks are unloaded or replaced
+- Prevented duplicate client-side block entity lifecycle registration during schematic preview rebuilds
+- Cleared loaded schematic chunks before removing the schematic world
 ```
 
 ## 1.0.4

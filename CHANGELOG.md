@@ -1,3 +1,11 @@
+## 1.0.5
+
+- Fixed a client crash when rebuilding schematic preview chunks containing Powah cables
+- Cleared schematic-world block entities when schematic chunks are unloaded or replaced so modded block entities can release their client-side state
+- Removed existing schematic block entities before installing replacements to avoid duplicate lifecycle registration during preview rebuilds
+- Cleared all loaded schematic chunks before discarding the schematic world
+- Bumped the mod version to `1.0.5`
+
 ## 1.0.4
 
 - Made the backend identity packet channel optional so Re-Forgematica clients can connect to servers that do not have Re-Forgematica installed

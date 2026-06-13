@@ -58,6 +58,11 @@ public class SchematicWorldHandler
                 Litematica.logger.info("Removing the schematic world...");
             }
 
+            if (world != null)
+            {
+                world.getChunkManager().unloadAllChunks();
+            }
+
             world = null;
         }
         else

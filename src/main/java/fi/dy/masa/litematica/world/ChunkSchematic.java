@@ -129,6 +129,20 @@ public class ChunkSchematic extends WorldChunk
         }
     }
 
+    @Override
+    public void setBlockEntity(BlockEntity blockEntity)
+    {
+        BlockPos pos = blockEntity.getPos();
+        BlockEntity oldBlockEntity = this.getBlockEntity(pos, WorldChunk.CreationType.CHECK);
+
+        if (oldBlockEntity != null && oldBlockEntity != blockEntity)
+        {
+            this.removeBlockEntity(pos);
+        }
+
+        super.setBlockEntity(blockEntity);
+    }
+
     @SuppressWarnings("deprecation")
     @Override
     public void addEntity(Entity entity)
